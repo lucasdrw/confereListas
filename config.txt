@@ -1,0 +1,7 @@
+[GERAL]
+
+email = 
+senha = 
+
+timeframe = 1
+qtd_mg = 1
