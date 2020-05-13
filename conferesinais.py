@@ -17,7 +17,7 @@ email = arquivo.get('GERAL', 'email')
 senha = arquivo.get('GERAL', 'senha')
 error_password = """{"code":"invalid_credentials","message":"You entered the wrong credentials. Please check that the login/password is correct."}"""
 
-tf = int(arquivo.get('GERAL', 'timeframe'))
+#tf = int(arquivo.get('GERAL', 'timeframe'))
 qtd_mg = int(arquivo.get('GERAL', 'qtd_mg'))
 
 API = IQ_Option(email, senha)
@@ -26,6 +26,8 @@ check, reason = API.connect()
 if check:
     print('CONECTADO COM SUCESSO!')
     print('--' * 40)
+
+    tf = int(input('Digite o timeframe: '))
 
     def perfil():
 	    perfil = json.loads(json.dumps(API.get_profile_ansyc()))
@@ -72,12 +74,12 @@ if check:
                 total = []
                 timeframe = tf * 60
                 tempo = time.time()
-                td = timedelta(minutes=timeframe_2)
+                td = timedelta(minutes=tf)
                 total_gale = qtd_mg + 1
                 gale=0
 
                 for i in range(1):
-                    X = API.get_candles(ativo, timeframe, 1000, tempo)
+                    X = API.get_candles(ativo, timeframe, 300, tempo)
                     total = X+total
                     tempo = int(X[0]['from'])-1
 

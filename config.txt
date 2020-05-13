@@ -3,5 +3,5 @@
 email = 
 senha = 
 
-timeframe = 1
+timeframe = 5
 qtd_mg = 1
