@@ -8,10 +8,13 @@ from decimal import Decimal
 try:
     file = open('sinais.txt')
 except IOError:
-    print('Ocorreu um erro, arquivo [sinais.txt] não encontrado')
+    print('   Ocorreu um erro, arquivo [sinais.txt] não encontrado')
 
 arquivo = configparser.RawConfigParser()
 arquivo.read('config.txt')
+
+saida = open('resultado.txt', 'w')
+saida.close()
 
 email = arquivo.get('GERAL', 'email')
 senha = arquivo.get('GERAL', 'senha')
@@ -23,10 +26,12 @@ API = IQ_Option(email, senha)
 check, reason = API.connect()
 
 if check:
-    print('CONECTADO COM SUCESSO!')
+    print('\n')
+    print('   CONECTADO COM SUCESSO!')
+    print('   CHECA LISTA CRIADO POR @lucsa.m')
     print('--' * 40)
 
-    #tf = int(input('Digite o timeframe: '))
+    tf = int(input('   Digite o timeframe: '))
 
     def perfil():
 	    perfil = json.loads(json.dumps(API.get_profile_ansyc()))
@@ -55,22 +60,18 @@ if check:
         print('\n')
 
         for linha in lista:
-            linha = linha.split(';')
+            linha = linha.split(',')
 
-            if len(linha) == 5:
+            if len(linha) == 3:
 
-                ativo = linha[0]                            #pegando o ativo 
-                agora = datetime.now()                      #pegando o dia 
-                data_sinal = agora.strftime('%d/%m/%Y')     #pegando o dia
-                hora_sinal = (str(linha[2] + ':00'))        #pegando a hora
-                acao = linha[3]                             #pegando a direcao
-                tf = int(linha[4])                          #pegando o timeframe
- 
-                '''if linha[2][:-1] == 'CAL':
+                agora = datetime.now()
+                data_sinal = agora.strftime('%d/%m/%Y')
+                hora_sinal = (str(linha[0] + ':00'))
+                ativo = linha[1]
+                if linha[2][:-1] == 'CAL':
                     acao = 'CALL'
                 else:
-                    acao = linha[2][:-1]'''
-
+                    acao = linha[2][:-1]
                 timestampLinha = stringToTimestamp(f'{data_sinal} {hora_sinal}')
                 data_sinal = timestamp_converter(timestampLinha)
                 
@@ -80,8 +81,6 @@ if check:
                 td = timedelta(minutes=tf)
                 total_gale = qtd_mg + 1
                 gale=0
-                dia = agora.strftime('%d')
-                hora_res = str(linha[2])
 
                 for i in range(1):
                     X = API.get_candles(ativo, timeframe, 300, tempo)
@@ -107,19 +106,40 @@ if check:
                                 if direcao_vela == acao.upper():
                                     result = 'WIN'
                                     if gale < total_gale:
-                                        #AUDCAD-OTC;16;01:00;CALL;5
                                         if gale == 0:
-                                            print('{};{};{};{};{} = {}'.format(ativo, dia, hora_res, acao, tf, result))
+                                            print('{}	{}	{}={}'.format(linha[0], ativo, acao, result))
+                                            arq = open('resultado.txt', 'r')
+                                            conteudo = arq.readlines()
+                                            conteudo.append('{}	{}	{}={}\n'.format(linha[0], ativo, acao, result))
+
+                                            arq = open('resultado.txt', 'w')
+                                            arq.writelines(conteudo)
+                                            arq.close()
+
                                             gale = 0
                                         else:
-                                            print('{};{};{};{};{} = {}GALE'.format(ativo, dia, hora_res, acao, tf, result))
+                                            print('{}	{}	{}={}GALE'.format(linha[0], ativo, acao, result))
                                             gale = 0
+                                            arq = open('resultado.txt', 'r')
+                                            conteudo = arq.readlines()
+                                            conteudo.append('{}	{}	{}={}GALE\n'.format(linha[0], ativo, acao, result))
+
+                                            arq = open('resultado.txt', 'w')
+                                            arq.writelines(conteudo)
+                                            arq.close()
                                     break
 
                                 elif direcao_vela == 'D':
                                     result = 'DOJI'
-                                    print('{};{};{};{};{} = {}'.format(ativo, dia, hora_res, acao, tf, result))
-                                    gale = 0
+                                    print('{}	{}	{}={}'.format(linha[0], ativo, acao, result))
+                                    arq = open('resultado.txt', 'r')
+                                    conteudo = arq.readlines()
+                                    conteudo.append('{}	{}	{}={}\n'.format(linha[0], ativo, acao, result))
+
+                                    arq = open('resultado.txt', 'w')
+                                    arq.writelines(conteudo)
+                                    arq.close()
+                                    break
 
                                 else:
                                     data_vela = data_vela + td
@@ -128,15 +148,21 @@ if check:
                                     result = 'LOSS'
                                     gale += 1
                                     if gale == total_gale:
-                                        print('{};{};{};{};{} = {}'.format(ativo, dia, hora_res, acao, tf, result))
+                                        print('{}	{}	{}={}'.format(linha[0], ativo, acao, result))
+                                        arq = open('resultado.txt', 'r')
+                                        conteudo = arq.readlines()
+                                        conteudo.append('{}	{}	{}={}\n'.format(linha[0], ativo, acao, result))
 
-                                    break
+                                        arq = open('resultado.txt', 'w')
+                                        arq.writelines(conteudo)
+                                        arq.close()
+                                    break                          
 
     lista = listaDeEntradas()
     confereLista(lista)
-    
+
 else:  
     if reason=="[Errno -2] Name or service not known":
         print("No Network")
     elif reason==error_password:
-        print("Error Password")
+        print("Error Email or Password")
